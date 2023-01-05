@@ -32,7 +32,7 @@ trait Querify
         $this->getSearch($search);
 
         $this->serverParams = [
-            'filters' => $filters,
+            'filters' => $this->filters,
             'limit' => $limit,
             'search' => $search,
             'sorts' => $sorts,
