@@ -114,10 +114,11 @@ class InertiaController extends BaseController {
         return $this->validationRules;
     }
 
-    protected function getFilterDates($filters = [], $subCount=0) {
+    protected function getFilterDates($filters = [], string $timeZone = null, $subCount=0) {
+        $zone = $timeZone ?? config("app.timezone");
         $dates = isset($filters['date']) ? explode("~", $filters['date']) : [
-            Carbon::now()->subMonths($subCount)->startOfMonth()->format('Y-m-d'),
-            Carbon::now()->endOfMonth()->format('Y-m-d')
+            Carbon::now()->setTimezone($zone)->subMonths($subCount)->startOfMonth()->format('Y-m-d'),
+            Carbon::now()->setTimezone($zone)->endOfMonth()->format('Y-m-d')
         ];
         return $dates;
     }
