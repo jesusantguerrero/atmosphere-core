@@ -13,6 +13,8 @@ class AtmosphereServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        $this->registerRoutes();
+
         $this->loadMigrationsFrom(
             __DIR__.'/../database/migrations'
         );
@@ -21,4 +23,15 @@ class AtmosphereServiceProvider extends ServiceProvider
             __DIR__.'/../database/migrations' => database_path('migrations')
         ], 'atmosphere-migrations');
     }
+
+        /**
+     * Register the package routes.
+     *
+     * @return void
+     */
+    private function registerRoutes()
+    {
+        $this->loadRoutesFrom(__DIR__ . '/Domains/Admin/routes.php');
+    }
+
 }

@@ -2,12 +2,11 @@
 
 namespace Freesgen\Atmosphere\Http\Controllers;
 
-use App\Actions\Journal\CreateTeamSettings;
-use Illuminate\Http\Request;
-use App\Models\Setting;
-use Freesgen\Atmosphere\Http\InertiaController;
-use Illuminate\Http\Response;
 use Inertia\Inertia;
+use App\Models\Setting;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Freesgen\Atmosphere\Http\InertiaController;
 
 class SettingsController extends InertiaController
 {
@@ -20,7 +19,7 @@ class SettingsController extends InertiaController
     public function index(Request $request)
     {
 
-        return Inertia::render('Settings/Index', $this->getIndexProps($request));
+        return inertia('Settings/Index', $this->getIndexProps($request));
     }
 
     /**
