@@ -20,6 +20,7 @@ return new class extends Migration
 
             $table->foreignId('label_id')->nullable();
             $table->foreignId('resource_id')->nullable();
+            $table->foreignId('resource_type')->nullable();
             $table->timestamps();
         });
     }
