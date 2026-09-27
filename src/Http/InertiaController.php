@@ -5,6 +5,7 @@ namespace Freesgen\Atmosphere\Http;
 use App\Http\Controllers\Controller as BaseController;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
@@ -58,8 +59,8 @@ class InertiaController extends BaseController {
     }
 
     public function update(Request $request, int $id) {
-        $resource = $this->model::findOrFail($id);
-        $postData = $request->post();
+        $resource = $this->findTeamResource($request, $id);
+        $postData = Arr::except($request->post(), ['team_id', 'user_id']);
         $resource->update($postData);
         $this->afterSave($postData, $resource);
 
@@ -71,13 +72,22 @@ class InertiaController extends BaseController {
     }
 
     public function destroy(Request $request, int $id) {
-        $resource = $this->model::findOrFail($id);
+        $resource = $this->findTeamResource($request, $id);
         if ($this->validateDelete($request, $resource)) {
             $resource->delete();
             return Redirect::back();
         } else {
             return Redirect::back()->withErrors(['error' => 'You cannot delete this resource']);
         }
+    }
+
+    /**
+     * Resolves a record by id within the current team, 404 for anything else.
+     */
+    protected function findTeamResource(Request $request, int $id) {
+        return $this->model::query()
+            ->when($this->authorizedTeam, fn ($query) => $query->where('team_id', $request->user()->current_team_id))
+            ->findOrFail($id);
     }
 
     protected function getIndexProps(Request $request, Collection|ResourceCollection $resources): array {
@@ -89,8 +99,11 @@ class InertiaController extends BaseController {
     }
 
     protected function getEditProps(Request $request, $id) {
+        $resources = $this->getModelQuery($request, $id);
+        abort_if($resources->isEmpty(), 404);
+
         return [
-            $this->model->getTable() => $this->getModelQuery($request, $id)[0]
+            $this->model->getTable() => $resources[0]
         ];
     }
 

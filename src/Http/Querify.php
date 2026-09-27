@@ -8,7 +8,6 @@ trait Querify
 {
 
     private $modelQuery;
-    private $whereRaw;
     private $request;
     protected $authorizedUser = true;
     protected $authorizedTeam = true;
@@ -43,8 +42,8 @@ trait Querify
           $extendFunction($this->modelQuery, $queryParams);
         }
 
-        if ($this->whereRaw) {
-            $this->modelQuery->whereRaw($this->whereRaw);
+        if ($this->authorizedTeam) {
+            $this->modelQuery->where(["team_id" => $request->user()->current_team_id]);
         }
 
         if ($id) {
@@ -55,10 +54,6 @@ trait Querify
            $this->modelQuery->where(["user_id" => $request->user()->id]);
         }
 
-        if ($this->authorizedTeam) {
-            $this->modelQuery->where(["team_id" => $request->user()->current_team_id]);
-         }
-
         return $this->getPaginate($limit, $page);
     }
 
@@ -66,22 +61,19 @@ trait Querify
         return $this->serverParams;
     }
 
+    /**
+     * Adds the search as one grouped OR clause with bound values, so it can't
+     * escape the team/user scoping or inject SQL.
+     */
     private function getSearch($search)
     {
+        if (!$search || !count($this->searchable)) return;
 
-        if (!$search) return '';
-        $whereRaw = '';
-         // handle search
-         foreach ($this->searchable as $field) {
-            //  add search fields to where clause
-            if (!$whereRaw) {
-                $whereRaw .= "$field like '%$search%'";
-            } else {
-                $whereRaw .= " or $field like '%$search%'";
+        $this->modelQuery->where(function ($query) use ($search) {
+            foreach ($this->searchable as $field) {
+                $query->orWhere($field, 'like', "%{$search}%");
             }
-        }
-        $this->whereRaw = $whereRaw;
-        return $whereRaw;
+        });
     }
 
     private function getRelationships($relationships)
